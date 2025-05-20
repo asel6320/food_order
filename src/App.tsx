@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {INGREDIENTS} from './Ingredient';
+import React, {useState} from "react";
+import IngredientsContainer from './components/IngredientsContainer/IngredientsContainer';
+import Burger from './components/Burger/Burger';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface IngredientCount {
+    name: string;
+    count: number;
 }
 
-export default App
+const App: React.FC = () => {
+    const [ingredients, setIngredients] = useState<IngredientCount[]>(INGREDIENTS.map(ingredient => ({
+        name: ingredient.name,
+        count: 0,
+    })));
+
+    const addCount = (name: string) => {
+        setIngredients(prevIngredients =>
+            prevIngredients.map(ingredient =>
+                ingredient.name === name ? { ...ingredient, count: ingredient.count + 1 } : ingredient
+            )
+        );
+    };
+
+    const deleteCount = (name: string) => {
+        setIngredients(prevIngredients =>
+            prevIngredients.map(ingredient =>
+                ingredient.name === name && ingredient.count > 0 ? { ...ingredient, count: ingredient.count - 1 } : ingredient
+            )
+        );
+    };
+
+    const calculatePrice = () => {
+        return ingredients.reduce((acc, ingredient) => {
+            const ingredientInfo = INGREDIENTS.find(i => i.name === ingredient.name);
+            return acc + ingredient.count * (ingredientInfo?.price ?? 0);
+        }, 30);
+    };
+
+    return (
+        <div className="constructorContainer">
+            <IngredientsContainer
+                ingredients={ingredients}
+                onAdd={addCount}
+                onDelete={deleteCount}
+            />
+            <Burger ingredients={ingredients} price={calculatePrice()} />
+        </div>
+    );
+};
+
+export default App;
